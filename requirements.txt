@@ -72,3 +72,16 @@ desktop.ini
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
+
+# Computer Vision & Numerical Processing
+numpy>=1.24.0,<2.0.0
+opencv-python-headless>=4.8.0
+
+# OCR & Text Extraction
+pytesseract>=0.3.10
+
+# Workstation IPC & Clipboard
+pyperclip>=1.8.2
+
+# Testing & Quality
+pytest>=7.4.0
