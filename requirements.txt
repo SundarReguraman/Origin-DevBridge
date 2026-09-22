@@ -1,3 +1,12 @@
-numpy>=1.26.0
+# Computer Vision & Numerical Processing
+numpy>=1.26.0,<2.0.0
 opencv-python>=4.9.0
+
+# OCR & Spatial Graph Parsing
 pytesseract>=0.3.10
+
+# Workstation IPC & Clipboard Bridge
+pyperclip>=1.8.2
+
+# Testing & Quality
+pytest>=7.4.0
