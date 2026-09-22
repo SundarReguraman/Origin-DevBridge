@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>DevBridge Optical Viewfinder</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0d1117;
+      color: #c9d1d9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      overflow: hidden;
+      padding: 16px;
+    }
+    header {
+      width: 100%;
+      text-align: center;
+      padding-top: 8px;
+    }
+    h1 { font-size: 1.1rem; color: #58a6ff; letter-spacing: 0.5px; }
+    p { font-size: 0.8rem; color: #8b949e; margin-top: 4px; }
+    
+    .viewport-container {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      flex: 1;
+      margin: 12px 0;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #30363d;
+      background: #161b22;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .reticle {
+      position: absolute;
+      border: 2px dashed rgba(88, 166, 255, 0.6);
+      border-radius: 8px;
+      width: 85%;
+      height: 75%;
+      pointer-events: none;
+    }
+    
+    .controls {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-bottom: 12px;
+    }
+    button {
+      background: #238636;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.2s;
+    }
+    button:active { background: #2ea043; }
+    button:disabled { background: #30363d; color: #8b949e; cursor: not-allowed; }
+    
+    #status {
+      text-align: center;
+      font-size: 0.85rem;
+      min-height: 20px;
+    }
+    .status-ok { color: #3fb950; }
+    .status-warn { color: #d29922; }
+    .status-err { color: #f85149; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ORIGIN DEVBRIDGE</h1>
+    <p>Air-Gapped Optical Capture Client</p>
+  </header>
+
+  <div class="viewport-container">
+    <video id="viewfinder" autoplay playsinline></video>
+    <div class="reticle"></div>
+    <canvas id="snapshot" style="display:none;"></canvas>
+  </div>
+
+  <div class="controls">
+    <div id="status" class="status-warn">Initializing camera...</div>
+    <button id="capture-btn" disabled>Transmit to Workstation</button>
+  </div>
+
+  <script>
+    const video = document.getElementById('viewfinder');
+    const canvas = document.getElementById('snapshot');
+    const captureBtn = document.getElementById('capture-btn');
+    const statusDiv = document.getElementById('status');
+
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+          audio: false
+        });
+        video.srcObject = stream;
+        statusDiv.textContent = "Ready. Align whiteboard inside reticle.";
+        statusDiv.className = "status-ok";
+        captureBtn.disabled = false;
+      } catch (err) {
+        statusDiv.textContent = "Camera access denied or unavailable: " + err.message;
+        statusDiv.className = "status-err";
+      }
+    }
+
+    captureBtn.addEventListener('click', async () => {
+      captureBtn.disabled = true;
+      statusDiv.textContent = "Capturing & transmitting frame...";
+      statusDiv.className = "status-warn";
+
+      canvas.width = video.videoWidth || 1280;
+      canvas.height = video.videoHeight || 720;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob(async (blob) => {
+        const formData = new FormData();
+        formData.append("frame", blob, "capture.jpg");
+
+        try {
+          const res = await fetch("/api/capture", {
+            method: "POST",
+            body: formData
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            statusDiv.textContent = "✓ Injected to clipboard (" + data.latency_ms + "ms)";
+            statusDiv.className = "status-ok";
+          } else {
+            statusDiv.textContent = "Server error: " + res.statusText;
+            statusDiv.className = "status-err";
+          }
+        } catch (e) {
+          statusDiv.textContent = "Transmission failed: " + e.message;
+          statusDiv.className = "status-err";
+        } finally {
+          captureBtn.disabled = false;
+        }
+      }, "image/jpeg", 0.92);
+    });
+
+    startCamera();
+  </script>
+</body>
+</html>
