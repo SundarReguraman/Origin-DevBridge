@@ -229,17 +229,15 @@ pip install -r requirements.txt
 
 ```
 
-*Minimal `requirements.txt`:*
-
-```text
-fastapi>=0.110.0
-uvicorn>=0.28.0
-opencv-python-headless>=4.9.0.80
-numpy>=1.26.0
-pyperclip>=1.8.2
-python-multipart>=0.0.9
-
-```
+> `pytesseract` requires the native Tesseract OCR executable to be installed on the system.
+>
+> - macOS: `brew install tesseract`
+> - Ubuntu/Debian: `sudo apt-get update && sudo apt-get install -y tesseract-ocr`
+> - Windows: install Tesseract OCR from the official installer and ensure `tesseract.exe` is on `PATH`.
+>
+> If Tesseract is not on `PATH`, set `TESSERACT_CMD` before running the app, for example:
+> - macOS/Linux: `export TESSERACT_CMD=/absolute/path/to/tesseract`
+> - Windows PowerShell: `$env:TESSERACT_CMD='C:\path\to\tesseract.exe'`
 
 ### 4. Run the Engine
 
