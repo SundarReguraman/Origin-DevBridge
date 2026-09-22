@@ -5,6 +5,7 @@ Compiles spatial DiagramNodes and positional coordinates into
 valid Mermaid.js flowchart syntax.
 """
 
+import re
 from typing import List
 from dataclasses import dataclass
 
@@ -28,7 +29,12 @@ class MermaidCompiler:
         """
         direction: 'LR' (Left-to-Right) or 'TD' (Top-to-Bottom)
         """
-        self.direction = direction
+        normalized_direction = direction.upper()
+        if normalized_direction not in {"LR", "TD"}:
+            raise ValueError(
+                f"Unsupported Mermaid flowchart direction '{direction}'. Use 'LR' or 'TD'."
+            )
+        self.direction = normalized_direction
 
     def build_edges_from_spatial_layout(self, nodes: List[DiagramNode]) -> List[DiagramEdge]:
         """
@@ -38,8 +44,12 @@ class MermaidCompiler:
         if len(nodes) < 2:
             return []
 
-        # Sort nodes spatially: primarily left-to-right (X-axis)
-        sorted_nodes = sorted(nodes, key=lambda n: n.centroid[0])
+        if self.direction == "LR":
+            # Left-to-right: primary X, tie-break Y
+            sorted_nodes = sorted(nodes, key=lambda n: (n.centroid[0], n.centroid[1]))
+        else:
+            # Top-to-bottom: primary Y, tie-break X
+            sorted_nodes = sorted(nodes, key=lambda n: (n.centroid[1], n.centroid[0]))
 
         edges: List[DiagramEdge] = []
         for i in range(len(sorted_nodes) - 1):
@@ -63,9 +73,8 @@ class MermaidCompiler:
         for node in nodes:
             # Sanitize text for Mermaid syntax
             clean_label = node.text.replace('"', "'").replace("\n", " ").strip()
-            # If text has a trailing dash or stray OCR artifact, clean it up
-            if clean_label.endswith(r"\—") or clean_label.endswith("-"):
-                clean_label = clean_label.rstrip(r"\—- ").strip()
+            # If text has trailing dash-like or punctuation OCR artifacts, clean it up
+            clean_label = re.sub(r"[\s\-—_.,;:|/\\]+$", "", clean_label)
             if not clean_label:
                 clean_label = node.id
             lines.append(f'    {node.id}["{clean_label}"]')

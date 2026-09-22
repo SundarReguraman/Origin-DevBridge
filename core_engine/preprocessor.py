@@ -37,7 +37,7 @@ def rectify_perspective(image: np.ndarray) -> np.ndarray:
 
     # 3. Find contours
     contours, _ = cv2.findContours(dilated, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-    contours = sorted(contours, key=cv2.contourArea, reverse=True)[:5]
+    contours = sorted(contours, key=cv2.contourArea, reverse=True)
 
     target_contour = None
     min_area = 0.15 * (h * w)  # Must cover at least 15% of the total frame

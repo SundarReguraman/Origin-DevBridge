@@ -1,86 +1,11 @@
-# Byte-compiled / optimized / cache files
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Virtual Environments
-venv/
-.venv/
-env/
-ENV/
-env.bak/
-venv.bak/
-
-# Environment Variables, Keys & Secrets
-.env
-.env.local
-.env.*.local
-*.pem
-*.key
-*.cert
-*.p12
-
-# Temporary Data, Captures & Model Artifacts
-captures/
-temp/
-tmp/
-*.tmp
-*.log
-*.onnx
-*.tflite
-*.pt
-*.bin
-
-# Testing & Coverage
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.nox/
-
-# Operating System Files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-desktop.ini
-
-# IDE & Editor Configurations
-.idea/
-*.sublime-project
-*.sublime-workspace
-.vscode/*
-!.vscode/settings.json
-!.vscode/extensions.json
-
 # Computer Vision & Numerical Processing
-numpy>=1.24.0,<2.0.0
-opencv-python-headless>=4.8.0
+numpy>=1.26.0,<2.0.0
+opencv-python>=4.9.0
 
-# OCR & Text Extraction
+# OCR & Spatial Graph Parsing
 pytesseract>=0.3.10
 
-# Workstation IPC & Clipboard
+# Workstation IPC & Clipboard Bridge
 pyperclip>=1.8.2
 
 # Testing & Quality

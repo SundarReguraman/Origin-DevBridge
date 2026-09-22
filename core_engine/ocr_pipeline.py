@@ -10,9 +10,8 @@ from typing import List, Optional, Tuple
 import cv2
 import numpy as np
 import pytesseract
-import sys
-if sys.platform.startswith("win"):
-    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+import os
+import shutil
 
 
 @dataclass
@@ -26,8 +25,34 @@ class DiagramNode:
 
 class OCRPipeline:
 
-  def __init__(self, tesseract_config: str = "--psm 6"):
+  def __init__(self, tesseract_config: str = "--psm 6", tesseract_cmd: Optional[str] = None):
     self.tesseract_config = tesseract_config
+    self.tesseract_cmd = self._resolve_tesseract_cmd(tesseract_cmd)
+    if self.tesseract_cmd:
+      pytesseract.pytesseract.tesseract_cmd = self.tesseract_cmd
+
+  def _resolve_tesseract_cmd(self, configured_cmd: Optional[str]) -> Optional[str]:
+    candidates = []
+    if configured_cmd:
+      candidates.append(configured_cmd)
+
+    env_cmd = os.environ.get("TESSERACT_CMD")
+    if env_cmd:
+      candidates.append(env_cmd)
+
+    for candidate in candidates:
+      expanded = os.path.expanduser(candidate)
+      if os.path.isfile(expanded):
+        return expanded
+      raise ValueError(
+          f"Tesseract executable not found at configured path: {candidate}"
+      )
+
+    discovered = shutil.which("tesseract")
+    if discovered and os.path.isfile(discovered):
+      return discovered
+
+    return None
 
   def detect_boxes(
       self, binary_img: np.ndarray, min_area_ratio: float = 0.005

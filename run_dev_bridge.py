@@ -18,6 +18,9 @@ def main():
 
     print("\n🚀 [1/3] Preprocessing image (perspective rectification & binarization)...")
     raw = cv2.imread(img_path)
+    if raw is None:
+        print(f"Error: unable to decode image file '{img_path}'.")
+        sys.exit(1)
     rectified = rectify_perspective(raw)
     binary = adaptive_binarize(rectified)
     cv2.imwrite("debug_preprocessed.png", binary)
